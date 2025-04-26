@@ -1,29 +1,57 @@
-clc; clear;
+%% Strain
+%  tthis currently imports all sets of graphs.
 
-import1 = load('Data\Layup1\L1_S11_F\StrainData\L1_S11_F00_DAT.mat');
-import2 = load('Data\Layup1\L1_S11_F\StrainData\L1_S11_F01_STRAIN_A_DAT.mat');
-import3 = load('Data\Layup1\L1_S11_F\StrainData\L1_S11_F01_STRAIN_M_DAT.mat');
-import4 = load('Data\Layup1\L1_S11_F\StrainData\L1_S11_F01_STRAIN_S_DAT.mat');
+clc; clear; close all;
+%% Header section
+function sortedList = natsortfiles(fileList)
+    [~,idx] = sort_nat({fileList.name});
+    sortedList = fileList(idx);
+end
 
-n=1;
+function [cs,index] = sort_nat(c,mode)
+% Natural order sort of cell array of strings
+    if nargin < 2
+        mode = 'ascend';
+    end
+    [~,ndx] = sort(lower(regexprep(c,'\d+','${char(0)}$0')));
+    cs = c(ndx);
+    if strcmpi(mode,'descend')
+        cs = cs(end:-1:1);
+        ndx = ndx(end:-1:1);
+    end
+    index = ndx;
+end
+%% Start of Loops
+% Set the folder path
+folderPath = 'Data\Layup1\L1_S11_F\StrainData\';
 
+% Get a list of all .mat files
+fileList = dir(fullfile(folderPath, '*.mat'));
 
-subplot(2,2,1);
-hold on;
-plot(import1.strain1);
-hold off;
+% Sort file names naturally
+fileList = natsortfiles(fileList);
 
-subplot(2,2,2);
-hold on;
-plot(import2.strain1);
-hold off;
+% Preallocate a cell array to store loaded data
+data = cell(length(fileList),1);
 
-subplot(2,2,3);
-hold on;
-plot(import3.strain1);
-hold off;
+% Load all files
+for k = 1:length(fileList)
+    filePath = fullfile(folderPath, fileList(k).name);
+    data{k} = load(filePath); % load strain1 directly
+end
 
-subplot(2,2,4);
-hold on;
-plot(import2.strain1);
-hold off;
+% Set group size (4 files per group)
+groupSize = 4;
+numGroups = floor(length(data) / groupSize);
+
+% Plot each group
+for g = 1:numGroups
+    figure;
+    for i = 1:groupSize
+        idx = (g-1)*groupSize + i;
+
+        subplot(2,2,i);
+        plot(data{idx}.strain1); % <== DIRECTLY strain1
+        title(fileList(idx).name, 'Interpreter', 'none');
+    end
+end
