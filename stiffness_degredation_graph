@@ -1,0 +1,24 @@
+clc; clear;
+folderPath = ('Data\Layup1\L1_S11_F\PZT-data');
+filePattern = fullfile(folderPath, '*.mat');
+matFiles = dir(filePattern);
+n = length(matFiles);
+
+stiffnessPlot = [];
+cycles_plot = [];
+
+
+for i = 1:n
+    tempzt = load(fullfile(folderPath, matFiles(i).name));
+    if size(tempzt.coupon.straingage_data.stiffness_degradation) == 1
+        stiffnessPlot = [stiffnessPlot, tempzt.coupon.straingage_data.stiffness_degradation];
+        cycles_plot = [cycles_plot, tempzt.coupon.cycles];
+    end
+
+end
+
+figure;
+scatter(cycles_plot,stiffnessPlot, "filled");
+title("Stiffness Degredation");
+xlabel("Number of Cycles");
+ylabel("Relative Degredation");
